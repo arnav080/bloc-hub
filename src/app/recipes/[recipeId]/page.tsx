@@ -47,7 +47,10 @@ export default async function RecipeDetail({ params }: { params: Promise<{ recip
           {/* Left Column: Info */}
           <div className="lg:col-span-2">
             <h1 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4 font-mono break-all">
-              <span className="text-zinc-500">{author}/</span>
+              <Link href={`/users/${author}`} className="text-zinc-500 hover:text-white transition-colors">
+                {author}
+              </Link>
+              <span className="text-zinc-500">/</span>
               <span className="text-blue-400">{recipeName}</span>
             </h1>
             
@@ -98,7 +101,7 @@ engine_config:
                 </div>
                 <div>
                   <div className="text-[10px] text-zinc-600 font-mono mb-1">QUANTIZATION</div>
-                  <div className="text-sm font-mono text-blue-400 font-bold bg-blue-500/10 px-3 py-1.5 rounded border border-blue-500/20 inline-block">{foundRecipe.quantization}</div>
+                  <div className="text-sm font-mono text-zinc-300 bg-zinc-900 px-3 py-1.5 rounded border border-white/5 inline-block">{foundRecipe.quantization}</div>
                 </div>
                 <div>
                   <div className="text-[10px] text-zinc-600 font-mono mb-1">CONTEXT SIZE</div>

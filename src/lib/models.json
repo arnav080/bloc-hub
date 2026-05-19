@@ -57,6 +57,22 @@
         "manifest_url": "https://raw.githubusercontent.com/arnav080/bloc-hub/main/recipes/arnav080/qwen3.6-35b-a3b-q4_k_s-optimized.yaml",
         "pulls": "0",
         "updated": "Just added"
+      },
+      {
+        "id": "arnav-qwen3.6-35b-a3b-q4_k_s-optimized",
+        "name": "arnav/qwen3.6-35b-a3b-q4_k_s-optimized",
+        "hardware_tier": "8GB VRAM",
+        "hardware_requirements": "RTX 4060 Ti 8GB",
+        "quantization": "Q4_K_S",
+        "context_size": "32768",
+        "kv_cache_key": "q8_0",
+        "kv_cache_value": "q8_0",
+        "flash_attention": true,
+        "moe_experts": 32,
+        "manifest_url": "https://raw.githubusercontent.com/arnav080/bloc-hub/main/recipes/arnav/qwen3.6-35b-a3b-q4_k_s-optimized.yaml",
+        "pulls": "0",
+        "updated": "Just added",
+        "created_at": "2026-05-19T13:58:44.434Z"
       }
     ]
   }
