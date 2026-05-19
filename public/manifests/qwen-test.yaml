@@ -1,0 +1,20 @@
+version: "1.0"
+metadata:
+  name: "qwen-test"
+  description: "Testing local model file"
+model:
+  local_path: "/Users/arnavgautam/Documents/bloc/demo/backend/qwen-3.5-4b.gguf"
+  engine: "llama.cpp"
+engine_config:
+  ctx_size: 4096
+  gpu_layers: 99
+  flash_attn: true
+  kv_cache_quant: "q8_0"
+  cpu_threads: 4
+  expert_offload: true
+scheduling:
+  max_concurrency: 2
+  policy: "fair-round-robin"
+network:
+  port: 8000
+  public: true

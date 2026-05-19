@@ -1,0 +1,84 @@
+[
+  {
+    "id": "qwen-35b-moe",
+    "name": "Qwen 35B MoE",
+    "family": "Qwen",
+    "description": "State-of-the-art MoE architecture offering immense reasoning capabilities.",
+    "tags": ["MoE", "reasoning"],
+    "recipes": [
+      {
+        "id": "bartowski-qwen-35b-moe-rtx4060",
+        "name": "bartowski/qwen-35b-moe-rtx4060",
+        "hardware_tier": "8GB VRAM",
+        "hardware_requirements": "8GB VRAM + 32GB RAM",
+        "quantization": "Q4_K_S",
+        "context_size": "32768",
+        "manifest_url": "http://localhost:3000/manifests/qwen-35b-moe-8gb.yaml",
+        "pulls": "80.6k",
+        "updated": "Updated 16 hours ago"
+      },
+      {
+        "id": "unsloth-qwen-35b-moe-mac",
+        "name": "unsloth/qwen-35b-moe-mac-optimized",
+        "hardware_tier": "16GB RAM",
+        "hardware_requirements": "16GB Unified Memory (Mac)",
+        "quantization": "Q8_0",
+        "context_size": "32768",
+        "manifest_url": "http://localhost:3000/manifests/qwen-35b-moe-mac.yaml",
+        "pulls": "12.4k",
+        "updated": "Updated 1 day ago"
+      }
+    ]
+  },
+  {
+    "id": "llama-3.1-8b",
+    "name": "Llama 3.1 8B",
+    "family": "Llama",
+    "description": "The open-source standard for general reasoning and agentic workflows.",
+    "tags": ["llama", "agentic", "fast"],
+    "recipes": [
+      {
+        "id": "bartowski-llama-3.1-8b-instruct",
+        "name": "bartowski/llama-3.1-8b-instruct",
+        "hardware_tier": "8GB VRAM",
+        "hardware_requirements": "8GB VRAM",
+        "quantization": "Q8_0",
+        "context_size": "131072",
+        "manifest_url": "http://localhost:3000/manifests/llama-3.1-8b.yaml",
+        "pulls": "1.05M",
+        "updated": "Updated 2 days ago"
+      },
+      {
+        "id": "mlx-community-llama-3.1-8b-4bit",
+        "name": "mlx-community/llama-3.1-8b-4bit",
+        "hardware_tier": "8GB RAM",
+        "hardware_requirements": "8GB Unified Memory",
+        "quantization": "4bit",
+        "context_size": "8192",
+        "manifest_url": "http://localhost:3000/manifests/llama-3.1-8b-mlx.yaml",
+        "pulls": "245k",
+        "updated": "Updated 5 days ago"
+      }
+    ]
+  },
+  {
+    "id": "deepseek-coder-v2",
+    "name": "DeepSeek Coder V2",
+    "family": "DeepSeek",
+    "description": "Elite coding assistant model designed for complex multi-file codebase tasks.",
+    "tags": ["coding", "agentic"],
+    "recipes": [
+      {
+        "id": "deepseek-coder-v2-lite-16gb",
+        "name": "deepseek-ai/coder-v2-lite-16gb",
+        "hardware_tier": "16GB VRAM",
+        "hardware_requirements": "16GB VRAM",
+        "quantization": "Q8_0",
+        "context_size": "32768",
+        "manifest_url": "http://localhost:3000/manifests/deepseek-coder-v2.yaml",
+        "pulls": "545k",
+        "updated": "Updated 3 hours ago"
+      }
+    ]
+  }
+]
