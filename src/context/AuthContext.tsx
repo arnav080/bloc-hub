@@ -30,28 +30,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (supabase) {
-      // Production Mode: Use real Supabase Session
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
+      const handleSession = async (session: any) => {
+        if (!session?.user) {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch Native Profile to see if they've completed onboarding
+        const { data: profile } = await supabase!.from('profiles').select('username').eq('auth_id', session.user.id).maybeSingle();
+        
+        if (!profile) {
+          // Native profile missing! Enforce Onboarding.
           setUser({
             id: session.user.id,
-            username: session.user.user_metadata.user_name || session.user.email?.split('@')[0] || "Unknown",
-            avatar_url: session.user.user_metadata.avatar_url || `https://github.com/${session.user.user_metadata.user_name}.png`,
+            username: "", // Blank until claimed
+            avatar_url: session.user.user_metadata.avatar_url || "",
+          });
+          
+          if (window.location.pathname !== '/onboarding' && window.location.pathname !== '/login') {
+            window.location.href = '/onboarding';
+          }
+        } else {
+          // Profile exists! Complete login.
+          setUser({
+            id: session.user.id,
+            username: profile.username,
+            avatar_url: session.user.user_metadata.avatar_url || `https://github.com/${profile.username}.png`,
           });
         }
         setLoading(false);
-      });
+      };
+
+      // Production Mode: Evaluate active session
+      supabase.auth.getSession().then(({ data: { session } }) => handleSession(session));
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        if (session?.user) {
-          setUser({
-            id: session.user.id,
-            username: session.user.user_metadata.user_name || session.user.email?.split('@')[0] || "Unknown",
-            avatar_url: session.user.user_metadata.avatar_url || `https://github.com/${session.user.user_metadata.user_name}.png`,
-          });
-        } else {
-          setUser(null);
-        }
+        handleSession(session);
       });
 
       return () => {

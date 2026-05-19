@@ -95,7 +95,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
   // Fetch Real Native Profile Metrics & Social Graph
   let followers = 0;
   let following = 0;
-  let nativeProfile = { display_name: username, bio: "", twitter_handle: null };
+  let nativeProfile: any = { display_name: username, bio: "", twitter_handle: "" };
 
   if (supabase) {
     const { data: profile } = await supabase.from('profiles').select('*').eq('username', username).maybeSingle();
