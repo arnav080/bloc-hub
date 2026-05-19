@@ -75,9 +75,38 @@ export async function POST(req: Request) {
           updated: "Just added"
         });
         fs.writeFileSync(modelsPath, JSON.stringify(models, null, 2));
+
+        // Direct real-time insertion to Supabase Recipes table
+        const { supabase } = require('@/lib/supabase');
+        if (supabase) {
+          supabase.from('recipes').insert({
+            id: `${username}-${recipeName}`,
+            model_id: targetModelId,
+            name: `${username}/${recipeName}`,
+            hardware_tier: vram,
+            hardware_requirements: hardware,
+            quantization: quantization,
+            context_size: "32768",
+            kv_cache_key: kvKey,
+            kv_cache_value: kvValue,
+            flash_attention: flashAttention,
+            moe_experts: moeExperts,
+            manifest_url: `https://raw.githubusercontent.com/${owner}/${repo}/main/recipes/${username}/${recipeName}.yaml`,
+            pulls: "0",
+            updated: "Just added"
+          }).then(({ error: dbErr }: any) => {
+            if (dbErr) {
+              console.error("Supabase insert recipe error:", dbErr);
+            } else {
+              console.log("Successfully indexed recipe in Supabase registry!");
+            }
+          }).catch((dbEx: any) => {
+            console.error("Supabase insert recipe exception:", dbEx);
+          });
+        }
       }
     } catch (err) {
-      console.warn("Failed to write to local models.json:", err);
+      console.warn("Failed to write to local models.json / Supabase:", err);
     }
     
     // Check if file exists to get its SHA (required for updating existing files)

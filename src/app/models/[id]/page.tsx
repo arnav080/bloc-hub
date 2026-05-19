@@ -1,12 +1,34 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import models from "@/lib/models.json";
+import modelsJson from "@/lib/models.json";
 import { RecipeDirectoryView } from "@/components/registry/RecipeDirectoryView";
 import { Layers } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default async function ModelDetail({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
-  const model = models.find((m) => m.id === resolvedParams.id);
+  let model: any = null;
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('models')
+        .select('*, recipes(*)')
+        .eq('id', resolvedParams.id)
+        .maybeSingle();
+
+      if (!error && data) {
+        model = data;
+      }
+    } catch (err) {
+      console.error("Supabase load model detail failed:", err);
+    }
+  }
+
+  // Fallback to local models.json
+  if (!model) {
+    model = modelsJson.find((m) => m.id === resolvedParams.id);
+  }
 
   if (!model) {
     notFound();
