@@ -44,11 +44,8 @@ export default function LoginPage() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none -z-10" />
       <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] pointer-events-none -z-10" />
 
-      <Link href="/" className="mb-12 flex items-center gap-3 group">
-        <div className="w-10 h-10 bg-white text-black flex items-center justify-center font-bold font-silkscreen text-xl rotate-3 group-hover:rotate-6 transition-all shadow-[4px_4px_0px_rgba(37,99,235,0.5)]">
-          B
-        </div>
-        <span className="font-silkscreen text-2xl tracking-widest text-white group-hover:text-blue-400 transition-colors">BLOC</span>
+      <Link href="/" className="mb-12 flex items-center px-6 h-10 bg-[#2563EB] rounded-md shrink-0 shadow-[0_4px_20px_rgba(37,99,235,0.2)] hover:opacity-90 transition-opacity">
+        <span className="font-mono text-[16px] font-medium leading-none text-white tracking-tight whitespace-nowrap">Bloc</span>
       </Link>
 
       <div className="w-full max-w-md bg-zinc-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
