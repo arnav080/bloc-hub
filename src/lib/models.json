@@ -4,7 +4,10 @@
     "name": "Qwen 35B MoE",
     "family": "Qwen",
     "description": "State-of-the-art MoE architecture offering immense reasoning capabilities.",
-    "tags": ["MoE", "reasoning"],
+    "tags": [
+      "MoE",
+      "reasoning"
+    ],
     "recipes": []
   },
   {
@@ -12,7 +15,11 @@
     "name": "Llama 3.1 8B",
     "family": "Llama",
     "description": "The open-source standard for general reasoning and agentic workflows.",
-    "tags": ["llama", "agentic", "fast"],
+    "tags": [
+      "llama",
+      "agentic",
+      "fast"
+    ],
     "recipes": []
   },
   {
@@ -20,7 +27,37 @@
     "name": "DeepSeek Coder V2",
     "family": "DeepSeek",
     "description": "Elite coding assistant model designed for complex multi-file codebase tasks.",
-    "tags": ["coding", "agentic"],
+    "tags": [
+      "coding",
+      "agentic"
+    ],
     "recipes": []
+  },
+  {
+    "id": "qwen3-6-35b-a3b",
+    "name": "Qwen3 6 35b A3b",
+    "family": "Qwen3",
+    "description": "Auto-registered Qwen3 6 35b A3b architecture optimized for high-performance local compute.",
+    "tags": [
+      "qwen3",
+      "auto-registered"
+    ],
+    "recipes": [
+      {
+        "id": "arnav080-qwen3.6-35b-a3b-q4_k_s-optimized",
+        "name": "arnav080/qwen3.6-35b-a3b-q4_k_s-optimized",
+        "hardware_tier": "8GB VRAM",
+        "hardware_requirements": "RTX 4060 Ti 8GB",
+        "quantization": "Q4_K_S",
+        "context_size": "32768",
+        "kv_cache_key": "q8_0",
+        "kv_cache_value": "q8_0",
+        "flash_attention": true,
+        "moe_experts": 32,
+        "manifest_url": "https://raw.githubusercontent.com/arnav080/bloc-hub/main/recipes/arnav080/qwen3.6-35b-a3b-q4_k_s-optimized.yaml",
+        "pulls": "0",
+        "updated": "Just added"
+      }
+    ]
   }
 ]
