@@ -50,59 +50,96 @@ export async function POST(req: Request) {
       const modelsPath = pathNode.join(process.cwd(), 'src/lib/models.json');
       const models = JSON.parse(fs.readFileSync(modelsPath, 'utf8'));
 
-      // Find matching base model
-      const targetModelId = baseModel === 'qwen-2.5-7b' ? 'qwen-35b-moe' : 
-                            baseModel === 'qwen-35b-moe' ? 'qwen-35b-moe' :
-                            baseModel === 'llama-3.1-8b' ? 'llama-3.1-8b' : 
-                            'deepseek-coder-v2';
-                            
-      const modelEntry = models.find((m: any) => m.id === targetModelId);
-      if (modelEntry) {
-        // Append new recipe
-        modelEntry.recipes.push({
-          id: `${username}-${recipeName}`,
-          name: `${username}/${recipeName}`,
-          hardware_tier: vram,
-          hardware_requirements: hardware,
-          quantization: quantization,
-          context_size: "32768",
-          kv_cache_key: kvKey,
-          kv_cache_value: kvValue,
-          flash_attention: flashAttention,
-          moe_experts: moeExperts,
-          manifest_url: `https://raw.githubusercontent.com/${owner}/${repo}/main/recipes/${username}/${recipeName}.yaml`,
-          pulls: "0",
-          updated: "Just added"
-        });
-        fs.writeFileSync(modelsPath, JSON.stringify(models, null, 2));
+      // Normalize target base model ID
+      const targetModelId = baseModel.toLowerCase().trim().replace(/[^a-z0-9-]/g, '-');
 
-        // Direct real-time insertion to Supabase Recipes table
-        const { supabase } = require('@/lib/supabase');
-        if (supabase) {
-          supabase.from('recipes').insert({
-            id: `${username}-${recipeName}`,
-            model_id: targetModelId,
-            name: `${username}/${recipeName}`,
-            hardware_tier: vram,
-            hardware_requirements: hardware,
-            quantization: quantization,
-            context_size: "32768",
-            kv_cache_key: kvKey,
-            kv_cache_value: kvValue,
-            flash_attention: flashAttention,
-            moe_experts: moeExperts,
-            manifest_url: `https://raw.githubusercontent.com/${owner}/${repo}/main/recipes/${username}/${recipeName}.yaml`,
-            pulls: "0",
-            updated: "Just added"
-          }).then(({ error: dbErr }: any) => {
-            if (dbErr) {
-              console.error("Supabase insert recipe error:", dbErr);
-            } else {
+      // Helper function to dynamically generate parent model metadata
+      const generateModelMetadata = (id: string) => {
+        const parts = id.split('-');
+        const familyName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+        const displayName = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+        
+        return {
+          id: id,
+          name: displayName,
+          family: familyName,
+          description: `Auto-registered ${displayName} architecture optimized for high-performance local compute.`,
+          tags: [familyName.toLowerCase(), "auto-registered"],
+          recipes: []
+        };
+      };
+
+      // Find or auto-create architecture in local JSON
+      let modelEntry = models.find((m: any) => m.id === targetModelId);
+      if (!modelEntry) {
+        modelEntry = generateModelMetadata(targetModelId);
+        models.push(modelEntry);
+      }
+
+      // Append new recipe
+      modelEntry.recipes.push({
+        id: `${username}-${recipeName}`,
+        name: `${username}/${recipeName}`,
+        hardware_tier: vram,
+        hardware_requirements: hardware,
+        quantization: quantization,
+        context_size: "32768",
+        kv_cache_key: kvKey,
+        kv_cache_value: kvValue,
+        flash_attention: flashAttention,
+        moe_experts: moeExperts,
+        manifest_url: `https://raw.githubusercontent.com/${owner}/${repo}/main/recipes/${username}/${recipeName}.yaml`,
+        pulls: "0",
+        updated: "Just added"
+      });
+      fs.writeFileSync(modelsPath, JSON.stringify(models, null, 2));
+
+      // Direct real-time insertion to Supabase
+      const { supabase } = require('@/lib/supabase');
+      if (supabase) {
+        try {
+          // 1. Verify parent model exists in DB, otherwise auto-create it
+          supabase.from('models')
+            .select('id')
+            .eq('id', targetModelId)
+            .maybeSingle()
+            .then(async ({ data: existingModel, error: findErr }: any) => {
+              if (!existingModel && !findErr) {
+                const meta = generateModelMetadata(targetModelId);
+                console.log(`Auto-registering new model family in Supabase: ${meta.name}`);
+                await supabase.from('models').insert({
+                  id: meta.id,
+                  name: meta.name,
+                  family: meta.family,
+                  description: meta.description,
+                  tags: meta.tags
+                });
+              }
+
+              // 2. Insert the recipe linked to the model family
+              await supabase.from('recipes').insert({
+                id: `${username}-${recipeName}`,
+                model_id: targetModelId,
+                name: `${username}/${recipeName}`,
+                hardware_tier: vram,
+                hardware_requirements: hardware,
+                quantization: quantization,
+                context_size: "32768",
+                kv_cache_key: kvKey,
+                kv_cache_value: kvValue,
+                flash_attention: flashAttention,
+                moe_experts: moeExperts,
+                manifest_url: `https://raw.githubusercontent.com/${owner}/${repo}/main/recipes/${username}/${recipeName}.yaml`,
+                pulls: "0",
+                updated: "Just added"
+              });
               console.log("Successfully indexed recipe in Supabase registry!");
-            }
-          }).catch((dbEx: any) => {
-            console.error("Supabase insert recipe exception:", dbEx);
-          });
+            })
+            .catch((dbEx: any) => {
+              console.error("Supabase auto-register exception:", dbEx);
+            });
+        } catch (dbEx) {
+          console.error("Supabase indexing exception:", dbEx);
         }
       }
     } catch (err) {
