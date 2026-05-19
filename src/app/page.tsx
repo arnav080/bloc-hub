@@ -1,43 +1,284 @@
 "use client";
-
+ 
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Cpu, Clock, User, Plus, Check, Compass, Rss, Copy, Terminal, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 import models from "@/lib/models.json";
 import PixelBlast from "@/components/PixelBlast";
 import { CTAButton } from "@/components/Navbar";
 import { AsciiCanvas } from "@/components/AsciiCanvas";
 import { useAuth } from "@/context/AuthContext";
-
+ 
 import PipelineSection from "@/components/PipelineSection";
 import OpenSourceSection from "@/components/OpenSourceSection";
 import { FAQ } from "@/components/FAQ";
 import { FinalCTA } from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
-
+ 
 export default function Home() {
   const { user, loading } = useAuth();
+  const [feedTab, setFeedTab] = useState<"following" | "explore">("following");
+  const [feedRecipes, setFeedRecipes] = useState<any[]>([]);
+  const [isPersonalized, setIsPersonalized] = useState(false);
+  const [isFeedLoading, setIsFeedLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  
+  // Recommended creators state
+  const [recommendedCreators, setRecommendedCreators] = useState<any[]>([]);
 
+  // 1. Fetch Feed Recipes
+  useEffect(() => {
+    if (loading) return;
+    
+    const fetchFeed = async () => {
+      setIsFeedLoading(true);
+      try {
+        const usernameQuery = feedTab === "following" && user ? user.username : "";
+        const res = await fetch(`/api/social/feed?username=${encodeURIComponent(usernameQuery)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setFeedRecipes(data.recipes);
+          setIsPersonalized(data.isPersonalized);
+        }
+      } catch (e) {
+        console.error("Failed to load feed", e);
+      } finally {
+        setIsFeedLoading(false);
+      }
+    };
+
+    fetchFeed();
+  }, [user, loading, feedTab]);
+
+  // 2. Fetch Recommended Creators on load
+  useEffect(() => {
+    if (loading) return;
+
+    const fetchRecommended = async () => {
+      if (!supabase) return;
+      try {
+        let query = supabase.from('profiles').select('username, display_name').limit(5);
+        if (user) {
+          query = query.neq('username', user.username);
+        }
+        const { data } = await query;
+        if (data) {
+          if (user) {
+            const { data: follows } = await supabase.from('follows').select('following_username').eq('follower_username', user.username);
+            const followed = follows?.map(f => f.following_username.toLowerCase()) || [];
+            
+            const filtered = data.filter(c => !followed.includes(c.username.toLowerCase()));
+            setRecommendedCreators(filtered);
+          } else {
+            setRecommendedCreators(data);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load recommended creators", e);
+      }
+    };
+
+    fetchRecommended();
+  }, [user, loading]);
+
+  const copyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    toast.success("Command copied to clipboard!");
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleFollowRecommended = async (creatorUsername: string) => {
+    if (!user) {
+      toast.error("Please login to follow developers!");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/social/follow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentUsername: user.username,
+          targetUsername: creatorUsername,
+          action: "follow"
+        })
+      });
+
+      if (res.ok) {
+        toast.success(`Following @${creatorUsername}`);
+        setRecommendedCreators(prev => prev.filter(c => c.username !== creatorUsername));
+        if (feedTab === "following") {
+          const feedRes = await fetch(`/api/social/feed?username=${encodeURIComponent(user.username)}`);
+          if (feedRes.ok) {
+            const data = await feedRes.json();
+            setFeedRecipes(data.recipes);
+            setIsPersonalized(data.isPersonalized);
+          }
+        }
+      }
+    } catch (e) {
+      toast.error("Failed to follow creator");
+    }
+  };
+
+  const formatRelativeTime = (dateStr: string) => {
+    if (!dateStr) return "recently";
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+  };
+ 
   if (!loading && user) {
     return (
-      <div className="min-h-screen bg-[#171616] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
-        {/* Ambient background bloom */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none -z-10" />
-        
-        <div className="flex flex-col items-center justify-center text-center font-mono max-w-md relative z-10">
-          <div className="w-12 h-12 rounded-xl border border-white/10 bg-zinc-900/50 flex items-center justify-center mb-6 shadow-inner text-blue-500 animate-pulse">
-            <svg width="18" height="18" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0.877075 7.49988C0.877075 3.84221 3.84221 0.877075 7.49988 0.877075C11.1575 0.877075 14.1227 3.84221 14.1227 7.49988C14.1227 11.1575 11.1575 14.1227 7.49988 14.1227C3.84221 14.1227 0.877075 11.1575 0.877075 7.49988ZM7.49988 1.82708C4.36686 1.82708 1.82708 4.36686 1.82708 7.49988C1.82708 9.07686 2.4704 10.5034 3.51375 11.5332L11.5332 3.51375C10.5034 2.4704 9.07686 1.82708 7.49988 1.82708ZM13.1727 7.49988C13.1727 5.9229 12.5294 4.49633 11.486 3.46654L3.46654 11.486C4.49633 12.5294 5.9229 13.1727 7.49988 13.1727C10.6329 13.1727 13.1727 10.6329 13.1727 7.49988Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
-            </svg>
+      <div className="min-h-screen bg-[#171616] text-white pt-24 pb-32">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+
+        <div className="max-w-[1400px] mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <div>
+              <span className="text-blue-500 font-mono text-[10px] uppercase tracking-widest mb-3 block">Developer Network</span>
+              <h1 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4 font-mono">
+                Welcome back, <span className="text-blue-400">{user.username}</span>
+              </h1>
+              <p className="text-zinc-500 font-mono text-sm max-w-xl">
+                Your personalized hub dashboard. Keep up with contributor updates, test suites, and mesh optimization runs.
+              </p>
+            </div>
+            
+            <div className="flex bg-zinc-900 border border-white/5 p-1 rounded-xl shrink-0 font-mono text-xs">
+              <button 
+                onClick={() => setFeedTab("following")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${feedTab === "following" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"}`}
+              >
+                <Rss className="w-3.5 h-3.5" /> Following
+              </button>
+              <button 
+                onClick={() => setFeedTab("explore")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${feedTab === "explore" ? "bg-white text-black font-bold" : "text-zinc-400 hover:text-white"}`}
+              >
+                <Compass className="w-3.5 h-3.5" /> Explore
+              </button>
+            </div>
           </div>
-          <h2 className="text-lg font-bold text-white mb-2 uppercase tracking-wider">Feed Coming Soon</h2>
-          <p className="text-xs text-zinc-500 leading-relaxed mb-6">
-            Your personalized developer feed tracking trending model releases, local benchmark scores, and updates from contributors you follow is currently being compiled.
-          </p>
-          <Link 
-            href="/registry"
-            className="text-[10px] font-bold text-blue-400 border border-blue-500/20 hover:border-blue-500/50 bg-blue-950/20 px-4 py-2 rounded-lg uppercase tracking-widest transition-all"
-          >
-            Explore Registry →
-          </Link>
+
+          <div className="max-w-4xl mx-auto space-y-6">
+            {feedTab === "following" && !isPersonalized && !isFeedLoading && (
+              <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-6 font-mono text-xs text-zinc-400 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <strong className="text-blue-400 uppercase tracking-wider block mb-1">Explore Community Runs</strong>
+                  Your following feed is currently empty because you aren't following anyone yet or they haven't posted runs! Showing latest global recipes.
+                </div>
+                <button 
+                  onClick={() => setFeedTab("explore")}
+                  className="shrink-0 text-blue-400 hover:text-white transition-colors underline decoration-blue-500/30"
+                >
+                  Browse Registry →
+                </button>
+              </div>
+            )}
+
+            {isFeedLoading ? (
+              <div className="space-y-6 animate-pulse">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-48 bg-zinc-900/30 border border-white/5 rounded-2xl" />
+                ))}
+              </div>
+            ) : feedRecipes.length === 0 ? (
+              <div className="text-center py-20 bg-zinc-900/10 border border-white/5 rounded-2xl font-mono text-zinc-500">
+                <Terminal className="w-8 h-8 text-zinc-700 mx-auto mb-4" />
+                No optimization runs available in this view.
+              </div>
+            ) : (
+              feedRecipes.map((recipe) => {
+                const author = recipe.name.split('/')[0] || "community";
+                const recipeName = recipe.name.split('/')[1] || recipe.name;
+                const pullCommand = `bloc pull ${recipe.name}`;
+                
+                return (
+                  <div 
+                    key={recipe.id}
+                    className="bg-zinc-900/30 border border-white/5 hover:border-white/10 rounded-2xl p-6 transition-all font-mono relative group"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-xs uppercase shadow-lg shadow-blue-500/10">
+                          {author[0]}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                            <a href={`/users/${author}`} className="text-zinc-400 hover:text-white font-bold transition-colors">
+                              @{author}
+                            </a>
+                            <span>•</span>
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatRelativeTime(recipe.created_at)}</span>
+                          </div>
+                          <a href={`/recipes/${recipe.id}`} className="text-base font-bold text-blue-100 hover:text-blue-400 transition-colors mt-0.5 block flex items-center gap-2">
+                            {recipeName}
+                            <ExternalLink className="w-3 h-3 text-zinc-600 group-hover:text-blue-400 transition-colors" />
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 self-start">
+                        <span className="text-[9px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-400 px-2.5 py-1 rounded-md border border-white/5">
+                          {recipe.models?.family || "Base Model"}
+                        </span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-md border border-blue-500/10">
+                          {recipe.quantization} quant
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-black/30 rounded-xl border border-white/5 mb-6 text-xs text-zinc-400">
+                      <div>
+                        <span className="text-[9px] text-zinc-600 block mb-1">HARDWARE REQUIREMENTS</span>
+                        <strong className="text-zinc-300">{recipe.hardware_requirements}</strong>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-zinc-600 block mb-1">CONTEXT SIZE</span>
+                        <strong className="text-zinc-300">{recipe.context_size} TOKENS</strong>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-zinc-600 block mb-1">HARDWARE TIER</span>
+                        <strong className="text-zinc-300">{recipe.hardware_tier}</strong>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-zinc-600 block mb-1">ENGINE</span>
+                        <strong className="text-zinc-300">LLAMA.CPP</strong>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 bg-zinc-950 px-4 py-2.5 rounded-xl border border-white/5">
+                      <div className="flex items-center gap-2 overflow-hidden text-zinc-400 text-xs">
+                        <span className="text-zinc-600 select-none">$</span>
+                        <code className="truncate text-zinc-200">{pullCommand}</code>
+                      </div>
+                      <button 
+                        onClick={() => copyToClipboard(pullCommand, recipe.id)}
+                        className="p-2 hover:bg-white/5 rounded-lg transition-colors shrink-0 text-zinc-500 hover:text-white"
+                      >
+                        {copiedId === recipe.id ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-400 animate-scale-up" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     );

@@ -3,12 +3,7 @@ import { supabase } from "@/lib/supabase";
 import modelsData from "@/lib/models.json";
 import Link from "next/link";
 import { 
-  Settings, 
-  Edit3, 
-  Plus, 
   Box, 
-  Database,
-  Terminal,
   Clock,
   Cpu
 } from "lucide-react";
@@ -205,12 +200,6 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
           <div className="flex items-center gap-8 border-b border-white/10 mb-8 px-2 overflow-x-auto whitespace-nowrap">
             <button className="flex items-center gap-2 pb-4 text-sm font-bold font-sans text-white border-b-2 border-white">
               <Box className="w-4 h-4" /> Recipes <span className="bg-white/10 text-white text-xs px-2 py-0.5 rounded-full ml-1">{userRecipes.length}</span>
-            </button>
-            <button className="flex items-center gap-2 pb-4 text-sm font-sans text-zinc-500 hover:text-zinc-300 transition-colors">
-              <Database className="w-4 h-4" /> Namespaces <span className="bg-white/5 text-zinc-500 text-xs px-2 py-0.5 rounded-full ml-1">0</span>
-            </button>
-            <button className="flex items-center gap-2 pb-4 text-sm font-sans text-zinc-500 hover:text-zinc-300 transition-colors">
-              <Terminal className="w-4 h-4" /> Nodes <span className="bg-white/5 text-zinc-500 text-xs px-2 py-0.5 rounded-full ml-1">0</span>
             </button>
           </div>
 
