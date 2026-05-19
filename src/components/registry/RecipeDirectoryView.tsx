@@ -91,18 +91,30 @@ export function RecipeDirectoryView({ model }: { model: any }) {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3 text-[10px] md:text-xs font-mono text-zinc-500 flex-wrap pl-7.5">
-                  <span className="text-zinc-300">{recipe.hardware_tier}</span>
-                  <span className="w-1 h-1 rounded-full bg-zinc-700" />
-                  <span className="text-zinc-400">{recipe.quantization}</span>
-                  <span className="w-1 h-1 rounded-full bg-zinc-700" />
-                  <span>ctx: {recipe.context_size}</span>
-                  <span className="w-1 h-1 rounded-full bg-zinc-700" />
+                <div className="flex items-center gap-3 text-[10px] md:text-xs font-mono text-zinc-500 flex-wrap pl-7.5 mt-2">
+                  <span className="text-zinc-300 font-semibold">{recipe.hardware_requirements}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
+                  <span className="text-zinc-400 font-bold">{recipe.quantization}</span>
+                  {recipe.kv_cache_key && (
+                    <>
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
+                      <span className="text-zinc-500">{recipe.kv_cache_key} KV cache</span>
+                    </>
+                  )}
+                  {recipe.flash_attention && (
+                    <>
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
+                      <span className="text-zinc-500">FlashAttention</span>
+                    </>
+                  )}
+                  {recipe.moe_experts > 0 && (
+                    <>
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
+                      <span className="text-zinc-500">MoE expert offload to CPU</span>
+                    </>
+                  )}
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
                   <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {recipe.updated}</span>
-                  <span className="w-1 h-1 rounded-full bg-zinc-700" />
-                  <span className="flex items-center gap-1"><Download className="w-3 h-3" /> {recipe.pulls}</span>
-                  <span className="w-1 h-1 rounded-full bg-zinc-700" />
-                  <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {Math.floor(Math.random() * 800) + 120}</span>
                 </div>
               </Link>
             );

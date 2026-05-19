@@ -142,6 +142,12 @@ export default function Navbar() {
               <span className="text-zinc-500 text-[6px]">▼</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 bg-[#171616]/95 border border-white/10 text-white font-mono rounded-lg p-1 shadow-2xl backdrop-blur-xl">
+              <DropdownMenuItem className="flex items-center justify-between text-[10px] rounded-md hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer transition-colors text-blue-400 hover:text-blue-300 uppercase tracking-wider font-bold p-0">
+                <Link href="/registry/submit" className="w-full h-full px-3 py-2 block">
+                  + Submit Recipe
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-white/5 my-1" />
               <DropdownMenuItem className="flex items-center justify-between text-[10px] px-3 py-2 rounded-md hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer transition-colors text-zinc-300 hover:text-white uppercase tracking-wider font-bold">
                 Settings
               </DropdownMenuItem>

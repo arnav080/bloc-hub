@@ -36,17 +36,24 @@ export async function POST(req: Request) {
       const YAML = require('yaml');
       
       const parsedYaml = YAML.parse(yaml);
-      const vram = parsedYaml.requirements?.vram || '8GB';
-      const quantization = parsedYaml.model?.quantization || 'Q4_K_M';
-      const contextSize = parsedYaml.engine?.context_size || 8192;
-      const baseModel = parsedYaml.model?.base || 'llama-3-8b';
+      const vram = parsedYaml.requirements?.vram || '8GB VRAM';
+      const hardware = parsedYaml.requirements?.hardware || 'RTX 4060 Ti';
+      const quantization = parsedYaml.model?.quantization || 'Q4_K_S';
+      const baseModel = parsedYaml.model?.base || 'qwen-35b-moe';
+
+      const gpuLayers = parsedYaml.engine?.gpu_layers || 99;
+      const moeExperts = parsedYaml.engine?.moe_experts || 0;
+      const flashAttention = parsedYaml.engine?.flash_attention ?? false;
+      const kvKey = parsedYaml.engine?.kv_cache?.key || '';
+      const kvValue = parsedYaml.engine?.kv_cache?.value || '';
 
       const modelsPath = pathNode.join(process.cwd(), 'src/lib/models.json');
       const models = JSON.parse(fs.readFileSync(modelsPath, 'utf8'));
 
       // Find matching base model
       const targetModelId = baseModel === 'qwen-2.5-7b' ? 'qwen-35b-moe' : 
-                            baseModel === 'llama-3-8b' ? 'llama-3.1-8b' : 
+                            baseModel === 'qwen-35b-moe' ? 'qwen-35b-moe' :
+                            baseModel === 'llama-3.1-8b' ? 'llama-3.1-8b' : 
                             'deepseek-coder-v2';
                             
       const modelEntry = models.find((m: any) => m.id === targetModelId);
@@ -55,10 +62,14 @@ export async function POST(req: Request) {
         modelEntry.recipes.push({
           id: `${username}-${recipeName}`,
           name: `${username}/${recipeName}`,
-          hardware_tier: `${vram} VRAM`,
-          hardware_requirements: `${vram} VRAM`,
+          hardware_tier: vram,
+          hardware_requirements: hardware,
           quantization: quantization,
-          context_size: String(contextSize),
+          context_size: "32768",
+          kv_cache_key: kvKey,
+          kv_cache_value: kvValue,
+          flash_attention: flashAttention,
+          moe_experts: moeExperts,
           manifest_url: `https://raw.githubusercontent.com/${owner}/${repo}/main/recipes/${username}/${recipeName}.yaml`,
           pulls: "0",
           updated: "Just added"
