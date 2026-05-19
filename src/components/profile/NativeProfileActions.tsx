@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Edit3, Settings, Plus, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 interface ProfileData {
   displayName: string;
@@ -33,6 +34,21 @@ export function NativeProfileActions({
   const [isLoading, setIsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formData, setFormData] = useState(initialProfileData);
+
+  // Sync real-time follow relationship on client mount/session change
+  useEffect(() => {
+    if (supabase && currentUsername && targetUsername) {
+      supabase
+        .from('follows')
+        .select('*')
+        .eq('follower_username', currentUsername)
+        .eq('following_username', targetUsername)
+        .maybeSingle()
+        .then(({ data }) => {
+          setIsFollowing(!!data);
+        });
+    }
+  }, [currentUsername, targetUsername]);
 
   const toggleFollow = async () => {
     if (!currentUsername) {
