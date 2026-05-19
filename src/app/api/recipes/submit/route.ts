@@ -90,7 +90,8 @@ export async function POST(req: Request) {
         moe_experts: moeExperts,
         manifest_url: `https://raw.githubusercontent.com/${owner}/${repo}/main/recipes/${username}/${recipeName}.yaml`,
         pulls: "0",
-        updated: "Just added"
+        updated: "Just added",
+        created_at: new Date().toISOString()
       });
       fs.writeFileSync(modelsPath, JSON.stringify(models, null, 2));
 

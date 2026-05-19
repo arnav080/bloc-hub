@@ -4,6 +4,36 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Download, Clock, Heart, Search, Filter, Cpu } from "lucide-react";
 
+export function formatRelativeTime(dateString?: string, fallbackText: string = "Just added") {
+  if (!dateString || dateString === "Just added") return "Just added";
+  
+  try {
+    const created = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - created.getTime();
+    
+    if (diffMs < 60000) {
+      return "Just added";
+    }
+    
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 60) {
+      return `${diffMins}m ago`;
+    }
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) {
+      return `${diffHours}h ago`;
+    }
+    
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return "1 day ago";
+    return `${diffDays} days ago`;
+  } catch (e) {
+    return fallbackText;
+  }
+}
+
 export function RecipeDirectoryView({ model }: { model: any }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHardware, setSelectedHardware] = useState<string[]>([]);
@@ -114,7 +144,10 @@ export function RecipeDirectoryView({ model }: { model: any }) {
                     </>
                   )}
                   <span className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
-                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {recipe.updated}</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> 
+                    {formatRelativeTime(recipe.created_at || recipe.updated)}
+                  </span>
                 </div>
               </Link>
             );

@@ -148,6 +148,11 @@ export default function Navbar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-white/5 my-1" />
+              <DropdownMenuItem className="flex items-center justify-between text-[10px] rounded-md hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer transition-colors text-zinc-300 hover:text-white uppercase tracking-wider font-bold p-0">
+                <Link href="/profile" className="w-full h-full px-3 py-2 block">
+                  Profile
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem className="flex items-center justify-between text-[10px] px-3 py-2 rounded-md hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer transition-colors text-zinc-300 hover:text-white uppercase tracking-wider font-bold">
                 Settings
               </DropdownMenuItem>

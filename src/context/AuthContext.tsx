@@ -13,7 +13,7 @@ export type User = {
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  login: (username: string) => Promise<void>;
+  login: (username: string, provider?: 'github' | 'google') => Promise<void>;
   logout: () => void;
 };
 
@@ -69,11 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = async (username: string) => {
+  const login = async (username: string, provider: 'github' | 'google' = 'github') => {
     if (supabase) {
-      // Trigger real GitHub OAuth Redirect
+      // Trigger real OAuth Redirect
       await supabase.auth.signInWithOAuth({
-        provider: 'github',
+        provider: provider,
         options: {
           redirectTo: `${window.location.origin}/registry`
         }
