@@ -1,0 +1,23 @@
+version: "1.0"
+model:
+  base: qwen3.6-35b-a3b
+  name: arnav080/qwen3.6-35b-a3b-q4_k_s-optimized
+  quantization: Q4_K_S
+  source: https://huggingface.co/QuantFactory/Qwen3.6-35B-A3B-Q4_K_S-GGUF/resolve/main/Qwen3.6-35B-A3B-Q4_K_S.Q4_K_S.gguf
+requirements:
+  vram: 8GB VRAM
+  hardware: RTX 4060 Ti 8GB
+  os:
+    - macOS
+    - Linux
+    - Windows
+engine:
+  gpu_layers: 99
+  moe_experts: 32
+  flash_attention: true
+  batch_size: 512
+  ubatch_size: 512
+  threads: 12
+  kv_cache:
+    key: q8_0
+    value: q8_0
