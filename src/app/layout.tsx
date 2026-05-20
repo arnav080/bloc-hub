@@ -3,6 +3,7 @@ import { Geist_Mono, Silkscreen, Geist } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { cn } from "@/lib/utils";
+import { Analytics } from "@vercel/analytics/next";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -40,6 +41,7 @@ export default function RootLayout({
           <main className="flex-grow flex flex-col">
             {children}
           </main>
+          <Analytics />
         </Providers>
       </body>
     </html>
